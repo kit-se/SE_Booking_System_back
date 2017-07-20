@@ -5,12 +5,15 @@ const app = express();
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "POST, GET");
+    res.header("Access-Control-Allow-Headers", 'Authorization');
     next();
 });
 
 app.get('/login', (req, res) => {
-    const id = req.query.id;
-    const password = req.query.password;
+    const auth = new Buffer (req.headers.authorization.split('Bearer ')[1], 'base64') + '';
+    const id = auth.split(':')[0];
+    const password = auth.split(':')[1];
+
     const url = `http://kumohweb.kumoh.ac.kr/mybsvr/login/login.jsp?id=${id}&passwd=${password}`;
 
     const expressRes = res;
