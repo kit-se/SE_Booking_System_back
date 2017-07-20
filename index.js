@@ -9,7 +9,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get('/login', (req, res) => {
+app.post('/login', (req, res) => {
     const auth = new Buffer (req.headers.authorization.split('Bearer ')[1], 'base64') + '';
     const id = auth.split(':')[0];
     const password = auth.split(':')[1];
