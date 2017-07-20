@@ -18,6 +18,8 @@ app.post('/login', (req, res) => {
 
     const expressRes = res;
 
+    // todo: Check this id is admin.
+
     request(url).then(res => {
         if (res.match('OK')) {
             expressRes.send({
