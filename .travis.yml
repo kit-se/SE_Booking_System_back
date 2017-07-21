@@ -1,3 +1,11 @@
+os:
+  - linux
+services:
+  - docker
+language: node_js
+node_js:
+  - "6.10.0"
+
 branches:
   only:
   - master
