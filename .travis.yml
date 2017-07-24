@@ -17,6 +17,5 @@ deploy:
   provider: s3
   access_key_id: $S3_ACCESS_KEY
   secret_access_key: $S3_SECRET_ACCESS_KEY
-  bucket: "S3 Bucket"
   skip_cleanup: true
   upload-dir: back
