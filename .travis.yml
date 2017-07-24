@@ -10,9 +10,6 @@ branches:
   only:
   - master
 
-install:
-  - npm install
-
 deploy:
   provider: s3
   access_key_id: $S3_ACCESS_KEY
