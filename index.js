@@ -27,15 +27,25 @@ mysql.createConnection({
         const url = `http://kumohweb.kumoh.ac.kr/mybsvr/login/login.jsp?id=${id}&passwd=${password}`;
 
         const expressRes = res;
-
-        // todo: Check this id is admin.
-
         request(url).then(res => {
             if (res.match('OK')) {
-                expressRes.send({
-                    staus: 'success',
-                    result: 'login success'
-                })
+                // 로그인 성공시 admin 체크 수행
+                const query = `SELECT * FROM admin WHERE id = ${id}`;
+                conn.query( query ).then( rows => {
+                    if ( rows.length !== 0 ) {
+                        expressRes.send({
+                            staus: 'success',
+                            result: 'login success',
+                            isAdmin: true
+                        })
+                    } else {
+                        expressRes.send({
+                            staus: 'success',
+                            result: 'login success',
+                            isAdmin: false
+                        })
+                    }
+                });
             } else {
                 expressRes.send({
                     status: 'success',
