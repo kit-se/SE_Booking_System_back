@@ -17,8 +17,6 @@ mysql.createConnection({
     database: 'booking_system'
 }).then((conn) => {
     // 로그인
-    // header에 authorize 부분에 아이디와 비밀번호를 숨겨 들고와 학교 로그인 API를 이용해 로그인이 아이디와 비밀번호가 맞는지 전달
-    // 로그인 요청한 인원이 관리자면 관리자라는 표시도 전달
     app.post('/login', (req, res) => {
         const auth = new Buffer(req.headers.authorization.split('Bearer ')[1], 'base64') + '';
         const id = auth.split(':')[0];
