@@ -11,7 +11,7 @@ app.use((req, res, next) => {
 });
 
 mysql.createConnection({
-    host: '13.124.177.198',
+    host: 'localhost',
     user: 'gurubooru',
     password: 'se330bs',
     database: 'booking_system'
