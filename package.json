@@ -3,8 +3,7 @@
     "version": "1.0.0",
     "description": "",
     "main": "index.js",
-    "scripts": {
-    },
+    "scripts": {},
     "repository": {
         "type": "git",
         "url": "git+https://github.com/kit-se/SE_Booking_System_back.git"
@@ -17,6 +16,7 @@
     "homepage": "https://github.com/kit-se/SE_Booking_System_back#readme",
     "dependencies": {
         "express": "^4.15.3",
+        "moment": "^2.18.1",
         "promise-mysql": "^3.0.1",
         "request": "^2.81.0",
         "request-promise": "^4.2.1",

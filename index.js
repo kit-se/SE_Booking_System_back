@@ -1,6 +1,7 @@
 const express = require('express');
 const request = require('request-promise');
 const mysql = require('promise-mysql');
+const moment = require('moment');
 const app = express();
 
 app.use((req, res, next) => {
@@ -12,8 +13,10 @@ app.use((req, res, next) => {
 
 mysql.createConnection({
     host: 'localhost',
-    user: 'gurubooru',
-    password: 'se330bs',
+    user: 'root',
+    password: 'grapgrap',
+    // user: 'gurubooru',
+    // password: 'se330bs',
     database: 'booking_system'
 }).then((conn) => {
     // 로그인
@@ -29,8 +32,8 @@ mysql.createConnection({
             if (res.match('OK')) {
                 // 로그인 성공시 admin 체크 수행
                 const query = `SELECT * FROM admin WHERE id = ${id}`;
-                conn.query( query ).then( rows => {
-                    if ( rows.length !== 0 ) {
+                conn.query(query).then(rows => {
+                    if (rows.length !== 0) {
                         expressRes.send({
                             staus: 'success',
                             result: 'login success',
@@ -57,6 +60,52 @@ mysql.createConnection({
                 result: error
             })
         });
+    });
+    // 예약 현황
+    app.get('/bookingInfo', (req, res) => {
+        let query = '';
+        if (req.query.date_flag === 'today') {
+            query = `SELECT booking.id as id, booker, booking_time, section.name as section 
+                    FROM section, booking 
+                    WHERE 
+                        booking_date = '${moment().format('YYYY-MM-DD')}' AND 
+                        booking.isdelete = 0 AND 
+                        section.id = booking.section`;
+        } else if (req.query.date_flag === 'tomorrow') {
+            query =
+                `SELECT booking.id as id, booker, booking_time, section.name as section 
+                    FROM section, booking 
+                    WHERE 
+                        booking_date = '${moment().add(1, 'd').format('YYYY-MM-DD')}' AND 
+                        booking.isdelete = 0 AND 
+                        section.id = booking.section`;
+        }
+        conn.query(query).then(rows => {
+            res.send({
+                status: 'success',
+                result: rows
+            });
+        }).catch(err => {
+            res.send({
+                status: "fail",
+                result: err
+            })
+        });
+    });
+    // 섹션 리스트
+    app.get('/section', (req, res) => {
+       const query = `SELECT name FROM section WHERE isdelete = 0`;
+       conn.query( query ).then( rows => {
+           res.send({
+               status: 'success',
+               result: rows
+           })
+       }).catch( err => {
+           res.send({
+               status: 'fail',
+               result: err
+           })
+       })
     });
 });
 
