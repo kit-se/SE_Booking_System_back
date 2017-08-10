@@ -16,10 +16,8 @@ app.use(bodyParser.json());
 
 mysql.createConnection({
     host: 'localhost',
-    user: 'root',
-    password: 'grapgrap',
-    // user: 'gurubooru',
-    // password: 'se330bs',
+    user: 'gurubooru',
+    password: 'se330bs',
     database: 'booking_system'
 }).then((conn) => {
     // 로그인
