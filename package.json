@@ -15,6 +15,7 @@
     },
     "homepage": "https://github.com/kit-se/SE_Booking_System_back#readme",
     "dependencies": {
+        "body-parser": "^1.17.2",
         "express": "^4.15.3",
         "moment": "^2.18.1",
         "promise-mysql": "^3.0.1",
