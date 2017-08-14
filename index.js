@@ -112,7 +112,7 @@ mysql.createConnection({
     // 예약
     app.post('/book', (req, res) => {
         const data = req.body;
-        let query = `SELECT * FROM booking WHERE booking_date = ${mysql.escape(data.booking_date)} AND section = ${mysql.escape(data.section)}`;
+        let query = `SELECT * FROM booking WHERE booking_date = ${mysql.escape(data.booking_date)} AND section = ${mysql.escape(data.section)} AND isdelete = 0`;
         conn.query(query).then(rows => { // 입력받은 예약정보의 날짜, 섹션에 해당하는 예약 정보 호출
             let canInsert = true;
             let bookingTime = data.booking_time.split(', ');
