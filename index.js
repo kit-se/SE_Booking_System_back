@@ -55,7 +55,6 @@ mysql.createConnection({
                 })
             }
         }).catch(error => {
-            console.log(error);
             expressRes.send({
                 status: 'fail',
                 result: error
@@ -113,21 +112,20 @@ mysql.createConnection({
         const data = req.body;
         let query = `SELECT * FROM booking WHERE booking_date = ${mysql.escape(data.booking_date)} AND section = ${mysql.escape(data.section)}`;
         conn.query(query).then(rows => { // 입력받은 예약정보의 날짜, 섹션에 해당하는 예약 정보 호출
-            console.log( rows );
             let canInsert = true;
             let bookingTime = data.booking_time.split(', ');
             for (let i = 0; i < rows.length; i++) { // 입력받은 예약정보의 예약 시간과 1시간이라도 겹치는 row가 발견되면 INSERT 하지 않음.
-                if ( !canInsert ) break; // insert를 하지 못하면 loop 종료
+                if (!canInsert) break; // insert를 하지 못하면 loop 종료
                 let bookedTime = rows[i].booking_time.split(', ');
-                for ( let j = 0; j < bookedTime.length; j++ ) {
-                    if ( bookingTime.indexOf( bookedTime[j] ) !== -1 ) { // 겹치는 시간이 존재한다는 뜻
+                for (let j = 0; j < bookedTime.length; j++) {
+                    if (bookingTime.indexOf(bookedTime[j]) !== -1) { // 겹치는 시간이 존재한다는 뜻
                         canInsert = false; // insert 하지못함
                         break;
                     }
                 }
             }
 
-            if ( canInsert ) { // 위의 확인 과정을 거쳐서 insert를 할 수 있다고 하면 Insert를 진행함.
+            if (canInsert) { // 위의 확인 과정을 거쳐서 insert를 할 수 있다고 하면 Insert를 진행함.
                 let query = `INSERT INTO booking (booker, booking_time, booking_date, section) VALUES (${mysql.escape(data.booker)}, ${mysql.escape(data.booking_time)}, ${mysql.escape(data.booking_date)}, ${mysql.escape(data.section)})`;
                 conn.query(query).then(result => {
                     res.send({
@@ -151,13 +149,24 @@ mysql.createConnection({
     // 마이페이지용 예약 현황
     app.get('/mypage', (req, res) => {
         let id = req.query.id; // 마이페이지에 접속한 학번
-        let query = `SELECT * FROM booking WHERE booker = ${mysql.escape(id)} AND isdelete = 0`;
-        conn.query(query).then( rows => {
+        let query = `SELECT 	
+                        booking.id as id,
+                        booking.booker as booker, 
+                        booking.booking_date as booking_date,
+                        booking.booking_time as booking_time,
+                        section.name as section
+                        FROM 
+                            booking, section
+                        WHERE
+                            section.id = booking.section AND
+                            booking.booker = ${mysql.escape(id)} AND 
+                            booking.isdelete = 0`;
+        conn.query(query).then(rows => {
             res.send({
                 status: 'success',
                 result: rows
             });
-        }).catch( err => {
+        }).catch(err => {
             res.send({
                 status: 'fail',
                 result: err
