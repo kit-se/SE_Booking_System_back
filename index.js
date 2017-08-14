@@ -180,18 +180,43 @@ mysql.createConnection({
     app.put('/cancle-book', (req, res) => {
         let booking_id = req.body.booking_id; // 예약 id
         let changer_id = req.body.changer_id; // 변경자 id
-        let query = `UPDATE booking SET booking.changer = ${changer_id}, booking.isdelete = 1 WHERE booking.id = ${booking_id}`;
-        conn.query( query ).then( result => {
+        let query = `UPDATE booking SET booking.changer = ${mysql.escape(changer_id)}, booking.isdelete = 1 WHERE booking.id = ${mysql.escape(booking_id)}`;
+        conn.query(query).then(result => {
             res.send({
                 status: 'success',
                 result: 'Booking info was deleted successfully'
+            });
+        }).catch(err => {
+            res.send({
+                status: 'fail',
+                result: err
+            });
+        })
+    });
+    // 사용 종료
+    app.put('/end-book', (req, res) => {
+        let booking_id = req.body.booking_id; // 예약 id
+        let changer_id = req.body.changer_id; // 변경자 학번
+        let change_time = req.body.change_time; // 변경된 시간 // '12, 13, 14' => '12, 14'
+
+        let query = `UPDATE booking
+                        SET 
+                            booking.changer = ${mysql.escape(changer_id)},
+                            booking.booking_time = ${mysql.escape(change_time)}
+                        WHERE
+                            booking.id = ${mysql.escape(booking_id)}`;
+
+        conn.query(query).then(() => {
+            res.send({
+                status: 'success',
+                result: 'Booking was end successfully'
             });
         }).catch( err => {
             res.send({
                 status: 'fail',
                 result: err
             });
-        })
+        });
     });
 });
 
