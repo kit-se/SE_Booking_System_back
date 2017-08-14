@@ -162,7 +162,8 @@ mysql.createConnection({
                         WHERE
                             section.id = booking.section AND
                             booking.booker = ${mysql.escape(id)} AND 
-                            booking.isdelete = 0`;
+                            booking.isdelete = 0    
+	                    ORDER BY booking.booking_date DESC`;
         conn.query(query).then(rows => {
             res.send({
                 status: 'success',
