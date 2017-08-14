@@ -148,6 +148,27 @@ mysql.createConnection({
             }
         });
     });
+    // 마이페이지용 예약 현황
+    app.get('/mypage', (req, res) => {
+        let id = req.query.id; // 마이페이지에 접속한 학번
+        let query = `SELECT * FROM booking WHERE booker = ${mysql.escape(id)} AND isdelete = 0`;
+        conn.query(query).then( rows => {
+            res.send({
+                status: 'sucess',
+                result: rows
+            });
+        }).catch( err => {
+            res.send({
+                status: 'fail',
+                result: err
+            });
+        });
+    });
+    // 예약 취소
+    app.post('/cancle-book', (req, res) => {
+        let id = req.query.id // 예약 id
+
+    });
 });
 
 app.listen(3000, () => {
