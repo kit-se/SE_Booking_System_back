@@ -18,6 +18,8 @@ mysql.createConnection({
     host: 'localhost',
     user: 'gurubooru',
     password: 'se330bs',
+    // user: 'root',
+    // password: 'grapgrap',
     database: 'booking_system'
 }).then((conn) => {
     // 로그인
@@ -174,9 +176,21 @@ mysql.createConnection({
         });
     });
     // 예약 취소
-    app.post('/cancle-book', (req, res) => {
-        let id = req.query.id // 예약 id
-
+    app.put('/cancle-book', (req, res) => {
+        let booking_id = req.body.booking_id; // 예약 id
+        let changer_id = req.body.changer_id; // 변경자 id
+        let query = `UPDATE booking SET booking.changer = ${changer_id}, booking.isdelete = 1 WHERE booking.id = ${booking_id}`;
+        conn.query( query ).then( result => {
+            res.send({
+                status: 'success',
+                result: 'Booking info was deleted successfully'
+            });
+        }).catch( err => {
+            res.send({
+                status: 'fail',
+                result: err
+            });
+        })
     });
 });
 
