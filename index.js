@@ -154,7 +154,7 @@ mysql.createConnection({
         let query = `SELECT * FROM booking WHERE booker = ${mysql.escape(id)} AND isdelete = 0`;
         conn.query(query).then( rows => {
             res.send({
-                status: 'sucess',
+                status: 'success',
                 result: rows
             });
         }).catch( err => {
