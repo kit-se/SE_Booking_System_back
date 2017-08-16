@@ -34,17 +34,17 @@ mysql.createConnection({
         request(url).then(res => {
             if (res.match('OK')) {
                 // 로그인 성공시 admin 체크 수행
-                const query = `SELECT * FROM admin WHERE id = ${ mysql.escape(id) }`;
+                const query = `SELECT * FROM admin WHERE credit = ${ mysql.escape(id) }`;
                 conn.query(query).then(rows => {
                     if (rows.length !== 0) {
                         expressRes.send({
-                            staus: 'success',
+                            status: 'success',
                             result: 'login success',
                             isAdmin: true
                         })
                     } else {
                         expressRes.send({
-                            staus: 'success',
+                            status: 'success',
                             result: 'login success',
                             isAdmin: false
                         })
