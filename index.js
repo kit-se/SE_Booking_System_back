@@ -66,19 +66,19 @@ mysql.createConnection({
     app.get('/bookingInfo', (req, res) => {
         let query = '';
         if (req.query.date_flag === 'today') {
-            query = `SELECT booking.id as id, booker, booking_time, section.name as section 
-                    FROM section, booking 
-                    WHERE 
-                        booking_date = ${ mysql.escape(moment().format('YYYY-MM-DD')) } AND 
-                        booking.isdelete = 0 AND 
+            query = `SELECT booking.id as id, booker, booking_time, section.name as section
+                    FROM section, booking
+                    WHERE
+                        booking_date = ${ mysql.escape(moment().format('YYYY-MM-DD')) } AND
+                        booking.isdelete = 0 AND
                         section.id = booking.section`;
         } else if (req.query.date_flag === 'tomorrow') {
             query =
-                `SELECT booking.id as id, booker, booking_time, section.name as section 
-                    FROM section, booking 
-                    WHERE 
-                        booking_date = ${ mysql.escape(moment().add(1, 'd').format('YYYY-MM-DD')) } AND 
-                        booking.isdelete = 0 AND 
+                `SELECT booking.id as id, booker, booking_time, section.name as section
+                    FROM section, booking
+                    WHERE
+                        booking_date = ${ mysql.escape(moment().add(1, 'd').format('YYYY-MM-DD')) } AND
+                        booking.isdelete = 0 AND
                         section.id = booking.section`;
         }
         conn.query(query).then(rows => {
@@ -148,6 +148,21 @@ mysql.createConnection({
             }
         });
     });
+    //330관리
+    app.get('/admin', (req, res) => {
+        const query = 'SELECT id, credit, name, position FROM admin WHERE isdelete = 0';
+        conn.query(query).then(rows => {
+            res.send({
+              status = 'success',
+              result = rows
+            })
+        })catch(err => {
+            res.send({
+                status: 'fail',
+                result: err
+            })
+        })
+    })
 });
 
 app.listen(3000, () => {
