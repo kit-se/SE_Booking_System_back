@@ -3,6 +3,8 @@ const request = require('request-promise');
 const mysql = require('promise-mysql');
 const moment = require('moment');
 const bodyParser = require('body-parser');
+const multiparty = require('multiparty');
+const fs = require('fs');
 const app = express();
 
 app.use((req, res, next) => {
@@ -211,12 +213,75 @@ mysql.createConnection({
                 status: 'success',
                 result: 'Booking was end successfully'
             });
-        }).catch( err => {
+        }).catch(err => {
             res.send({
                 status: 'fail',
                 result: err
             });
         });
+    });
+    // 신고
+    app.post('/report', (req, res) => {
+        const data = new multiparty.Form();
+        let title, contents, time;
+        data.on('field', (name, value) => {
+            if (name === 'title') {
+                title = value;
+            } else if (name === 'contents') {
+                contents = value;
+            } else if (name === 'time') {
+                time = value;
+            }
+        });
+        data.on('part', (file) => {
+            let url = '/assets/' + moment() + file.filename;
+            const fileWriteStream = fs.createWriteStream(url);
+            file.pipe(fileWriteStream);
+
+            file.on('end', () => {
+                fileWriteStream.end();
+                let query = // reporter는 신고자의 예약번호, target은 용의자의 예약번호.
+                    `SELECT reporter.booker as reporter, target.id as suspect FROM
+                        booking AS reporter,
+                        booking AS target
+                        WHERE
+                            target.id = ${ mysql.escape(time) } AND
+                            target.section = reporter.section AND
+                            target.id > reporter.id
+                        ORDER BY reporter.id DESC`;
+
+                conn.query(query).then(rows => {
+                    let reporter = rows[0].reporter;
+                    let suspect = rows[0].suspect;
+                    let query = `INSERT INTO report (reporter, title, content, prebooker) VALUES (${ mysql.escape(reporter) }, ${ mysql.escape(title) }, ${ mysql.escape(contents) }, ${ mysql.escape(suspect)})`;
+                    conn.query(query).then(result => {
+                        let query = `INSERT INTO reportpicture (report_id, url) VALUES (${ mysql.escape(result.insertId) }, ${ mysql.escape(url) })`;
+                        conn.query( query ).then( result => {
+                            res.send({
+                                status: 'success',
+                                result: 'Report was posted successfully'
+                            });
+                        }).catch( err => {
+                            res.send({
+                                status: 'fail',
+                                result: err
+                            });
+                        });
+                    }).catch(err => {
+                        res.send({
+                            status: 'fail',
+                            result: err
+                        })
+                    });
+                }).catch(err => {
+                    res.send({
+                        status: 'fail',
+                        result: err
+                    });
+                });
+            });
+        });
+        data.parse(req);
     });
 });
 
