@@ -148,21 +148,154 @@ mysql.createConnection({
             }
         });
     });
-    //330관리
+    //관리자 리스트
     app.get('/admin', (req, res) => {
         const query = 'SELECT id, credit, name, position FROM admin WHERE isdelete = 0';
         conn.query(query).then(rows => {
             res.send({
               status = 'success',
               result = rows
-            })
-        })catch(err => {
+            });
+        }).catch(err => {
             res.send({
                 status: 'fail',
                 result: err
-            })
-        })
-    })
+            });
+        });
+    });
+    //관리자 추가
+    app.post('/postManager', (req, res) => {
+        const data = req.body;
+        let query = `SELECT * FROM admin
+                    WHERE
+                        credit = ${mysql.escape(data.credit)} AND
+                        name = ${mysql.escape(data.name)} AND
+                        isdelete = 0`;
+
+        conn.query(query).then(rows =>{
+            let canInset = true;
+            let credit = data.credit;
+            let name = data.name;
+
+            for(int i = 0; i < rows.length; i++){//입력받은 정보와 같은 학번이나 이름을 가진 row가 발견될 경우 INSERT 하지 않음
+                if(!canInsert) break;//INSERT 못할 시 loop 종료
+
+                let adminCredit = rows[i].credit;
+                let adminName = rows[i].name;
+
+                if(credit == adminCredit && name == adminName){//겹치는 사람이 존재한다는 뜻
+                    canInsert = false;
+                }
+            }
+
+            if(canInsert){//확인 후 INSERT할 수 있다고 하면 INSERT진행
+                let query = `INSERT INTO admin (credit, name, position)
+                            VALUES (${mysql.escape(data.credit)}, ${mysql.escape(data.name)}, ${mysql.escape(data.position)})`;
+                conn.query(query).then(rows =>{
+                    res.send({
+                      status = 'success',
+                      result = rows
+                  });
+                }).catch(err => {
+                    res.send({
+                      status = 'fail',
+                      result = err
+                    });
+                });
+            }
+        });
+    });
+    //관리자 제거
+    app.put('/deleteManager', (req, res) => {
+        const data = req.body;
+        let query = `SELECT id FROM admin
+                    WHERE
+                        credit = ${mysql.escape(data.credit)} AND
+                        name = ${mysql.escape(data.name)} AND
+                        isdelete = 0`;
+
+        conn.query(query).then(rows => {
+            let id = rows.id;
+            let query = 'UPDATE admin SET isdelete = 1 WHERE id = ' + id;
+
+            conn.query(query).then(rows =>{
+                res.send({
+                  status = 'success',
+                  result = rows
+                });
+            }).catch(err => {
+                res.send({
+                  status = 'fail',
+                  result = err
+                });
+            });
+        });
+    });
+    //섹션 추가
+    app.post('/postSection', (req, res) => {
+        const data = req.body;
+        let query = `SELECT name FROM section
+                    WHERE
+                        name = ${mysql.escape(data.name)} AND
+                        isdelete = 0`;
+
+        conn.query(query).then(rows =>{//입력받은 정보와 같은 이름의 row가 발견되면 INSERT하지 않음
+            let canInsert = true;
+            let name = data.name;
+
+            for(int i = 0; i < rows.length; i++){
+                if(!canInsert) break;
+
+                let section = rows.name;
+                if(section == name){
+                    canInsert = false;
+            }
+          }
+        });
+
+        if(canInsert){
+            let query = `INSERT INTO section (name)
+                        VALUES (${mysql.escape(data.name)})`;
+            conn.query(query).then(rows => {
+                res.send({
+                    status = 'success',
+                    result = rows
+                });
+            }).catch(err => {
+                res.send({
+                    status = 'fail',
+                    result = err
+                });
+            });
+        }
+    });
+    //섹션 삭제
+    app.put('/deleteSection', (req, res) => {
+        const data = req.body;
+        let query = `SELETE id FROM section
+                    WHERE
+                        name = ${mysql.escape(data.name)} AND
+                        isdelete = 0`;
+
+        conn.query(query).then(rows => {
+            let id = rows.id;
+            let query = `UPDATE section SET isdelete = 1 WHERE id = ` + id;
+
+            conn.query(query).then(rows => {
+                res.send({
+                    status = 'success',
+                    result = rows
+                });
+            }).catch(err => {
+                res.send({
+                    status = 'fail',
+                    result = err
+                });
+            });
+        });
+    });
+    //배치도 첨부
+    app.post('/postLayout', (req, res) => {});
 });
 
 app.listen(3000, () => {
