@@ -304,7 +304,7 @@ mysql.createConnection({
                         result IS not NULL AND
                         sanction_date IS not NULL`;
 
-      conn.query(query).than(rows => {
+      conn.query(query).then(rows => {
           res.send({
               status: 'success',
               result: rows
@@ -326,7 +326,7 @@ mysql.createConnection({
                         result IS NULL AND
                         sanction_date IS NULL`;
 
-        conn.query(query).than(rows => {
+        conn.query(query).then(rows => {
             let id = data.id;
             let query = `UPDATE report
                         SET
@@ -334,7 +334,7 @@ mysql.createConnection({
                           result = ${mysql.escape(data.result)} AND
                           sanction_date = ${mysql.escape(data.sanction_date)}`;
 
-            conn.query(query).than(rows => {
+            conn.query(query).then(rows => {
                 res.send({
                     status: 'success',
                     result: rows
