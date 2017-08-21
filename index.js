@@ -153,8 +153,8 @@ mysql.createConnection({
         const query = 'SELECT id, credit, name, position FROM admin WHERE isdelete = 0';
         conn.query(query).then(rows => {
             res.send({
-              status = 'success',
-              result = rows
+              status: 'success',
+              result: rows
             });
         }).catch(err => {
             res.send({
@@ -164,7 +164,7 @@ mysql.createConnection({
         });
     });
     // 관리자 추가
-    app.post('/postManager', (req, res) => {
+    app.post('/post_manager', (req, res) => {
         const data = req.body;
         let query = `SELECT * FROM admin
                     WHERE
@@ -173,7 +173,7 @@ mysql.createConnection({
                         isdelete = 0`;
 
         conn.query(query).then(rows =>{
-            let canInset = true;
+            let canInsert = true;
             let credit = data.credit;
             let name = data.name;
 
@@ -193,20 +193,20 @@ mysql.createConnection({
                             VALUES (${mysql.escape(data.credit)}, ${mysql.escape(data.name)}, ${mysql.escape(data.position)})`;
                 conn.query(query).then(rows =>{
                     res.send({
-                      status = 'success',
-                      result = rows
+                      status: 'success',
+                      result: rows
                   });
                 }).catch(err => {
                     res.send({
-                      status = 'fail',
-                      result = err
+                      status: 'fail',
+                      result: err
                     });
                 });
             }
         });
     });
-    //관리자 제거
-    app.put('/deleteManager', (req, res) => {
+    // 관리자 제거
+    app.put('/delete_manager', (req, res) => {
         const data = req.body;
         let query = `SELECT id FROM admin
                     WHERE
@@ -220,19 +220,19 @@ mysql.createConnection({
 
             conn.query(query).then(rows =>{
                 res.send({
-                  status = 'success',
-                  result = rows
+                  status: 'success',
+                  result: rows
                 });
             }).catch(err => {
                 res.send({
-                  status = 'fail',
-                  result = err
+                  status: 'fail',
+                  result: err
                 });
             });
         });
     });
-    //섹션 추가
-    app.post('/postSection', (req, res) => {
+    // 섹션 추가
+    app.post('/post_section', (req, res) => {
         const data = req.body;
         let query = `SELECT name FROM section
                     WHERE
@@ -258,19 +258,19 @@ mysql.createConnection({
                         VALUES (${mysql.escape(data.name)})`;
             conn.query(query).then(rows => {
                 res.send({
-                    status = 'success',
-                    result = rows
+                    status: 'success',
+                    result: rows
                 });
             }).catch(err => {
                 res.send({
-                    status = 'fail',
-                    result = err
+                    status: 'fail',
+                    result: err
                 });
             });
         }
     });
-    //섹션 삭제
-    app.put('/deleteSection', (req, res) => {
+    // 섹션 삭제
+    app.put('/delete_section', (req, res) => {
         const data = req.body;
         let query = `SELETE id FROM section
                     WHERE
@@ -283,19 +283,71 @@ mysql.createConnection({
 
             conn.query(query).then(rows => {
                 res.send({
-                    status = 'success',
-                    result = rows
+                    status: 'success',
+                    result: rows
                 });
             }).catch(err => {
                 res.send({
-                    status = 'fail',
-                    result = err
+                    status: 'fail',
+                    result: err
                 });
             });
         });
     });
-    //배치도 첨부
-    app.post('/postLayout', (req, res) => {});
+    // 배치도 첨부
+    app.post('/post_layout', (req, res) => {});
+    // 제재 리스트
+    app.get('/sanction', (req, res) => {// 제재 대상, 처리자, 처리결과, 처리일자를 받아 제재 리스트를 작성
+      const query = `SELECT prebooker, manager, result, sanction_date
+                    FROM report
+                    WHERE
+                        result IS not NULL AND
+                        sanction_date IS not NULL`;
+
+      conn.query(query).than(rows => {
+          res.send({
+              status: 'success',
+              result: rows
+          });
+      }).catch(err => {
+          res.send({
+              status: 'fail',
+              result: err
+          });
+      });
+    });
+    // 제재 추가
+    app.put('/post_sanction', (req, res) => {
+        const data = req.body;
+        let query = `SELECT id FROM report
+                    WHERE
+                        id = ${mysql.escape(data.id)} AND
+                        manager IS NULL AND
+                        result IS NULL AND
+                        sanction_date IS NULL`;
+
+        conn.query(query).than(rows => {
+            let id = data.id;
+            let query = `UPDATE report
+                        SET
+                          manager = ${mysql.escape(data.manager)} AND
+                          result = ${mysql.escape(data.result)} AND
+                          sanction_date = ${mysql.escape(data.sanction_date)}`;
+
+            conn.query(query).than(rows => {
+                res.send({
+                    status: 'success',
+                    result: rows
+                });
+            }).catch(err => {
+                res.send({
+                    status: 'fail',
+                    result: err
+                });
+            });
+        });
+    })
+
 });
 
 app.listen(3000, () => {
