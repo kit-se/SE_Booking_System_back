@@ -300,12 +300,20 @@ mysql.createConnection({
             file.on('end', () => {
                 fileWriteStream.end();
                 let frontUrl = '..' + url.split( remoteFileUrl )[1];
-                let query = `INSERT INTO layout (url) VALUES (${ mysql.escape(frontUrl) })`;
-                conn.query(query).then(() => {
-                    res.send({
-                        status: 'success',
-                        result: 'Layout was insert successfully.'
-                    })
+                let query = `UPDATE layout SET isdelete = 1 WHERE isdelete = 0`;
+                conn.query( query ).then( () => {
+                    let query = `INSERT INTO layout (url) VALUES (${ mysql.escape(frontUrl) })`;
+                    conn.query(query).then(() => {
+                        res.send({
+                            status: 'success',
+                            result: 'Layout was insert successfully.'
+                        })
+                    }).catch(err => {
+                        res.send({
+                            status: 'fail',
+                            result: err
+                        });
+                    });
                 }).catch(err => {
                     res.send({
                         status: 'fail',
