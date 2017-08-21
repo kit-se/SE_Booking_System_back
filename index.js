@@ -235,7 +235,6 @@ mysql.createConnection({
         });
         data.on('part', (file) => {
             let url = '../report/' + moment() + file.filename;
-            console.log( url );
             const fileWriteStream = fs.createWriteStream(url);
             file.pipe(fileWriteStream);
 
@@ -275,6 +274,33 @@ mysql.createConnection({
                         })
                     });
                 }).catch(err => {
+                    res.send({
+                        status: 'fail',
+                        result: err
+                    });
+                });
+            });
+        });
+        data.parse(req);
+    });
+    // 배치도 첨부
+    app.post('/layout', (req, res) => {
+        const data = new multiparty.Form();
+        data.on('part', (file) => {
+            let url = '../layout' + moment() + file.filename;
+            const fileWriteStream = fs.createWriteStream(url);
+            file.pipe(fileWriteStream);
+
+            file.on('end', () => {
+                fileWriteStream.end();
+                let query = `INSERT INTO layout (url) VALUES (${ mysql.escape(url) })`;
+                console.log( query );
+                conn.query( query ).then( () => {
+                    res.send({
+                        status: 'success',
+                        result: 'Layout was insert successfully.'
+                    })
+                }).catch( err => {
                     res.send({
                         status: 'fail',
                         result: err
