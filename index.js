@@ -7,6 +7,9 @@ const multiparty = require('multiparty');
 const fs = require('fs');
 const app = express();
 
+const localFileUrl = '../front/src';
+const remoteFileUrl = '../SE_Booking_System_front/dist';
+
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "POST, GET, PUT");
@@ -234,7 +237,8 @@ mysql.createConnection({
             }
         });
         data.on('part', (file) => {
-            let url = '../report/' + moment() + file.filename;
+            // let url = localFileUrl + '/assets/report/' + moment() + file.filename;
+            let url = remoteFileUrl + '/assets/report/' + moment() + file.filename;
             const fileWriteStream = fs.createWriteStream(url);
             file.pipe(fileWriteStream);
 
@@ -255,13 +259,14 @@ mysql.createConnection({
                     let suspect = rows[0].suspect;
                     let query = `INSERT INTO report (reporter, title, content, prebooker) VALUES (${ mysql.escape(reporter) }, ${ mysql.escape(title) }, ${ mysql.escape(contents) }, ${ mysql.escape(suspect)})`;
                     conn.query(query).then(result => {
-                        let query = `INSERT INTO reportpicture (report_id, url) VALUES (${ mysql.escape(result.insertId) }, ${ mysql.escape(url) })`;
-                        conn.query( query ).then( result => {
+                        let frontUrl = '..' + url.split('../front/src')[1];
+                        let query = `INSERT INTO reportpicture (report_id, url) VALUES (${ mysql.escape(result.insertId) }, ${ mysql.escape(frontUrl) })`;
+                        conn.query(query).then(result => {
                             res.send({
                                 status: 'success',
                                 result: 'Report was posted successfully'
                             });
-                        }).catch( err => {
+                        }).catch(err => {
                             res.send({
                                 status: 'fail',
                                 result: err
@@ -287,19 +292,21 @@ mysql.createConnection({
     app.post('/layout', (req, res) => {
         const data = new multiparty.Form();
         data.on('part', (file) => {
-            let url = '../layout/' + moment() + file.filename;
+            // let url = localFileUrl + '/assets/layout/' + moment() + file.filename;
+            let url = remoteFileUrl + '/assets/layout/' + moment() + file.filename;
             const fileWriteStream = fs.createWriteStream(url);
             file.pipe(fileWriteStream);
 
             file.on('end', () => {
                 fileWriteStream.end();
-                let query = `INSERT INTO layout (url) VALUES (${ mysql.escape(url) })`;
-                conn.query( query ).then( () => {
+                let frontUrl = '..' + url.split('../front/src')[1];
+                let query = `INSERT INTO layout (url) VALUES (${ mysql.escape(frontUrl) })`;
+                conn.query(query).then(() => {
                     res.send({
                         status: 'success',
                         result: 'Layout was insert successfully.'
                     })
-                }).catch( err => {
+                }).catch(err => {
                     res.send({
                         status: 'fail',
                         result: err
@@ -308,6 +315,21 @@ mysql.createConnection({
             });
         });
         data.parse(req);
+    });
+    // 배치도 로드
+    app.get('/layout', (req, res) => {
+        let query = `SELECT url FROM layout WHERE isdelete = 0`;
+        conn.query(query).then(rows => {
+            res.send({
+                status: 'success',
+                result: rows[rows.length - 1] // 최신의 layout 파일 url
+            });
+        }).catch(err => {
+            res.send({
+                status: 'fail',
+                result: err
+            });
+        })
     });
 });
 
