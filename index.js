@@ -235,6 +235,7 @@ mysql.createConnection({
         });
         data.on('part', (file) => {
             let url = '/assets/' + moment() + file.filename;
+            console.log( url );
             const fileWriteStream = fs.createWriteStream(url);
             file.pipe(fileWriteStream);
 
