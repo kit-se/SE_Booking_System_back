@@ -294,7 +294,6 @@ mysql.createConnection({
             file.on('end', () => {
                 fileWriteStream.end();
                 let query = `INSERT INTO layout (url) VALUES (${ mysql.escape(url) })`;
-                console.log( query );
                 conn.query( query ).then( () => {
                     res.send({
                         status: 'success',
