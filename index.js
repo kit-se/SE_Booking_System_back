@@ -235,7 +235,6 @@ mysql.createConnection({
             }
         });
         data.on('part', (file) => {
-            // let url = localFileUrl + '/assets/report/' + moment() + file.filename;
             let url = remoteFileUrl + '/assets/report/' + moment() + file.filename;
             const fileWriteStream = fs.createWriteStream(url);
             file.pipe(fileWriteStream);
@@ -257,7 +256,7 @@ mysql.createConnection({
                     let suspect = rows[0].suspect;
                     let query = `INSERT INTO report (reporter, title, content, prebooker) VALUES (${ mysql.escape(reporter) }, ${ mysql.escape(title) }, ${ mysql.escape(contents) }, ${ mysql.escape(suspect)})`;
                     conn.query(query).then(result => {
-                        let frontUrl = '..' + url.split( remoteFileUrl )[1];
+                        let frontUrl = '..' + url.split(remoteFileUrl)[1];
                         let query = `INSERT INTO reportpicture (report_id, url) VALUES (${ mysql.escape(result.insertId) }, ${ mysql.escape(frontUrl) })`;
                         conn.query(query).then(result => {
                             res.send({
@@ -290,16 +289,15 @@ mysql.createConnection({
     app.post('/layout', (req, res) => {
         const data = new multiparty.Form();
         data.on('part', (file) => {
-            // let url = localFileUrl + '/assets/layout/' + moment() + file.filename;
             let url = remoteFileUrl + '/assets/layout/' + moment() + file.filename;
             const fileWriteStream = fs.createWriteStream(url);
             file.pipe(fileWriteStream);
 
             file.on('end', () => {
                 fileWriteStream.end();
-                let frontUrl = '..' + url.split( remoteFileUrl )[1];
+                let frontUrl = '..' + url.split(remoteFileUrl)[1];
                 let query = `UPDATE layout SET isdelete = 1 WHERE isdelete = 0`;
-                conn.query( query ).then( () => {
+                conn.query(query).then(() => {
                     let query = `INSERT INTO layout (url) VALUES (${ mysql.escape(frontUrl) })`;
                     conn.query(query).then(() => {
                         res.send({
@@ -342,8 +340,8 @@ mysql.createConnection({
         const query = 'SELECT id, credit, name, position FROM admin WHERE isdelete = 0';
         conn.query(query).then(rows => {
             res.send({
-              status: 'success',
-              result: rows
+                status: 'success',
+                result: rows
             });
         }).catch(err => {
             res.send({
@@ -361,34 +359,34 @@ mysql.createConnection({
                         name = ${mysql.escape(data.name)} AND
                         isdelete = 0`;
 
-        conn.query(query).then(rows =>{
+        conn.query(query).then(rows => {
             let canInsert = true;
             let credit = data.credit;
             let name = data.name;
 
-            for(let i = 0; i < rows.length; i++){// 입력받은 정보와 같은 학번이나 이름을 가진 row가 발견될 경우 INSERT 하지 않음
-                if(!canInsert) break;// INSERT 못할 시 loop 종료
+            for (let i = 0; i < rows.length; i++) {// 입력받은 정보와 같은 학번이나 이름을 가진 row가 발견될 경우 INSERT 하지 않음
+                if (!canInsert) break;// INSERT 못할 시 loop 종료
 
                 let adminCredit = rows[i].credit;
                 let adminName = rows[i].name;
 
-                if(credit === adminCredit && name === adminName){// 겹치는 사람이 존재한다는 뜻
+                if (credit === adminCredit && name === adminName) {// 겹치는 사람이 존재한다는 뜻
                     canInsert = false;
                 }
             }
 
-            if(canInsert){// 확인 후 INSERT할 수 있다고 하면 INSERT진행
+            if (canInsert) {// 확인 후 INSERT할 수 있다고 하면 INSERT진행
                 let query = `INSERT INTO admin (credit, name, position)
                             VALUES (${mysql.escape(data.credit)}, ${mysql.escape(data.name)}, ${mysql.escape(data.position)})`;
-                conn.query(query).then(rows =>{
+                conn.query(query).then(rows => {
                     res.send({
-                      status: 'success',
-                      result: rows
-                  });
+                        status: 'success',
+                        result: rows
+                    });
                 }).catch(err => {
                     res.send({
-                      status: 'fail',
-                      result: err
+                        status: 'fail',
+                        result: err
                     });
                 });
             }
@@ -400,15 +398,15 @@ mysql.createConnection({
         let id = data.id;
         let query = 'UPDATE admin SET isdelete = 1 WHERE id = ' + id;
 
-        conn.query(query).then(rows =>{
+        conn.query(query).then(rows => {
             res.send({
-              status: 'success',
-              result: rows
+                status: 'success',
+                result: rows
             });
         }).catch(err => {
             res.send({
-              status: 'fail',
-              result: err
+                status: 'fail',
+                result: err
             });
         });
     });
@@ -420,21 +418,21 @@ mysql.createConnection({
                         name = ${mysql.escape(data.name)} AND
                         isdelete = 0`;
 
-        conn.query(query).then(rows =>{// 입력받은 정보와 같은 이름의 row가 발견되면 INSERT하지 않음
+        conn.query(query).then(rows => {// 입력받은 정보와 같은 이름의 row가 발견되면 INSERT하지 않음
             let canInsert = true;
             let name = data.name;
 
-            for(let i = 0; i < rows.length; i++){
-                if(!canInsert) break;
+            for (let i = 0; i < rows.length; i++) {
+                if (!canInsert) break;
 
                 let section = rows[i].name;
-                if(section === name){
+                if (section === name) {
                     canInsert = false;
+                }
             }
-          }
         });
 
-        if(canInsert){
+        if (canInsert) {
             let query = `INSERT INTO section (name)
                         VALUES (${mysql.escape(data.name)})`;
             conn.query(query).then(rows => {
@@ -469,26 +467,27 @@ mysql.createConnection({
         });
     });
     // 배치도 첨부
-    app.post('/post-layout', (req, res) => {});
+    app.post('/post-layout', (req, res) => {
+    });
     // 제재 리스트
     app.get('/sanction', (req, res) => {// 제재 대상, 처리자, 처리결과, 처리일자를 받아 제재 리스트를 작성
-      const query = `SELECT prebooker, manager, result, sanction_date
+        const query = `SELECT prebooker, manager, result, sanction_date
                     FROM report
                     WHERE
                         result IS not NULL AND
                         sanction_date IS not NULL`;
 
-      conn.query(query).then(rows => {
-          res.send({
-              status: 'success',
-              result: rows
-          });
-      }).catch(err => {
-          res.send({
-              status: 'fail',
-              result: err
-          });
-      });
+        conn.query(query).then(rows => {
+            res.send({
+                status: 'success',
+                result: rows
+            });
+        }).catch(err => {
+            res.send({
+                status: 'fail',
+                result: err
+            });
+        });
     });
     // 제재 추가
     app.put('/post-sanction', (req, res) => {
