@@ -259,7 +259,7 @@ mysql.createConnection({
                     let suspect = rows[0].suspect;
                     let query = `INSERT INTO report (reporter, title, content, prebooker) VALUES (${ mysql.escape(reporter) }, ${ mysql.escape(title) }, ${ mysql.escape(contents) }, ${ mysql.escape(suspect)})`;
                     conn.query(query).then(result => {
-                        let frontUrl = '..' + url.split('../front/src')[1];
+                        let frontUrl = '..' + url.split( remoteFileUrl )[1];
                         let query = `INSERT INTO reportpicture (report_id, url) VALUES (${ mysql.escape(result.insertId) }, ${ mysql.escape(frontUrl) })`;
                         conn.query(query).then(result => {
                             res.send({
@@ -299,7 +299,7 @@ mysql.createConnection({
 
             file.on('end', () => {
                 fileWriteStream.end();
-                let frontUrl = '..' + url.split('../front/src')[1];
+                let frontUrl = '..' + url.split( remoteFileUrl )[1];
                 let query = `INSERT INTO layout (url) VALUES (${ mysql.escape(frontUrl) })`;
                 conn.query(query).then(() => {
                     res.send({
