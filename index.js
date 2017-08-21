@@ -238,7 +238,7 @@ mysql.createConnection({
             for(let i = 0; i < rows.length; i++){
                 if(!canInsert) break;
 
-                let section = rows.name;
+                let section = rows[i].name;
                 if(section === name){
                     canInsert = false;
             }
@@ -264,25 +264,18 @@ mysql.createConnection({
     // 섹션 삭제
     app.put('/delete-section', (req, res) => {
         const data = req.body;
-        let query = `SELETE id FROM section
-                    WHERE
-                        name = ${mysql.escape(data.name)} AND
-                        isdelete = 0`;
+        let id = data.id;
+        let query = `UPDATE section SET isdelete = 1 WHERE id = ` + id;
 
         conn.query(query).then(rows => {
-            let id = rows.id;
-            let query = `UPDATE section SET isdelete = 1 WHERE id = ` + id;
-
-            conn.query(query).then(rows => {
-                res.send({
-                    status: 'success',
-                    result: rows
-                });
-            }).catch(err => {
-                res.send({
-                    status: 'fail',
-                    result: err
-                });
+            res.send({
+                status: 'success',
+                result: rows
+            });
+        }).catch(err => {
+            res.send({
+                status: 'fail',
+                result: err
             });
         });
     });
