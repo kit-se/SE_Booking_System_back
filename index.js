@@ -23,8 +23,6 @@ mysql.createConnection({
     host: 'localhost',
     user: 'gurubooru',
     password: 'se330bs',
-    // user: 'root',
-    // password: 'grapgrap',
     database: 'booking_system'
 }).then((conn) => {
     // 로그인
@@ -49,7 +47,7 @@ mysql.createConnection({
                         })
                     } else {
                         expressRes.send({
-                            status: 'success',
+                            staus: 'success',
                             result: 'login success',
                             isAdmin: false
                         })
@@ -69,22 +67,22 @@ mysql.createConnection({
         });
     });
     // 예약 현황
-    app.get('/bookingInfo', (req, res) => {
+    app.get('/booking-info', (req, res) => {
         let query = '';
         if (req.query.date_flag === 'today') {
-            query = `SELECT booking.id as id, booker, booking_time, section.name as section 
-                    FROM section, booking 
-                    WHERE 
-                        booking_date = ${ mysql.escape(moment().format('YYYY-MM-DD')) } AND 
-                        booking.isdelete = 0 AND 
+            query = `SELECT booking.id as id, booker, booking_time, section.name as section
+                    FROM section, booking
+                    WHERE
+                        booking_date = ${ mysql.escape(moment().format('YYYY-MM-DD')) } AND
+                        booking.isdelete = 0 AND
                         section.id = booking.section`;
         } else if (req.query.date_flag === 'tomorrow') {
             query =
-                `SELECT booking.id as id, booker, booking_time, section.name as section 
-                    FROM section, booking 
-                    WHERE 
-                        booking_date = ${ mysql.escape(moment().add(1, 'd').format('YYYY-MM-DD')) } AND 
-                        booking.isdelete = 0 AND 
+                `SELECT booking.id as id, booker, booking_time, section.name as section
+                    FROM section, booking
+                    WHERE
+                        booking_date = ${ mysql.escape(moment().add(1, 'd').format('YYYY-MM-DD')) } AND
+                        booking.isdelete = 0 AND
                         section.id = booking.section`;
         }
         conn.query(query).then(rows => {
@@ -339,6 +337,191 @@ mysql.createConnection({
             });
         })
     });
+    // 관리자 리스트
+    app.get('/admin', (req, res) => {
+        const query = 'SELECT id, credit, name, position FROM admin WHERE isdelete = 0';
+        conn.query(query).then(rows => {
+            res.send({
+              status: 'success',
+              result: rows
+            });
+        }).catch(err => {
+            res.send({
+                status: 'fail',
+                result: err
+            });
+        });
+    });
+    // 관리자 추가
+    app.post('/post-admin', (req, res) => {
+        const data = req.body;
+        let query = `SELECT * FROM admin
+                    WHERE
+                        credit = ${mysql.escape(data.credit)} AND
+                        name = ${mysql.escape(data.name)} AND
+                        isdelete = 0`;
+
+        conn.query(query).then(rows =>{
+            let canInsert = true;
+            let credit = data.credit;
+            let name = data.name;
+
+            for(let i = 0; i < rows.length; i++){// 입력받은 정보와 같은 학번이나 이름을 가진 row가 발견될 경우 INSERT 하지 않음
+                if(!canInsert) break;// INSERT 못할 시 loop 종료
+
+                let adminCredit = rows[i].credit;
+                let adminName = rows[i].name;
+
+                if(credit === adminCredit && name === adminName){// 겹치는 사람이 존재한다는 뜻
+                    canInsert = false;
+                }
+            }
+
+            if(canInsert){// 확인 후 INSERT할 수 있다고 하면 INSERT진행
+                let query = `INSERT INTO admin (credit, name, position)
+                            VALUES (${mysql.escape(data.credit)}, ${mysql.escape(data.name)}, ${mysql.escape(data.position)})`;
+                conn.query(query).then(rows =>{
+                    res.send({
+                      status: 'success',
+                      result: rows
+                  });
+                }).catch(err => {
+                    res.send({
+                      status: 'fail',
+                      result: err
+                    });
+                });
+            }
+        });
+    });
+    // 관리자 제거
+    app.put('/delete-admin', (req, res) => {
+        const data = req.body;
+        let id = data.id;
+        let query = 'UPDATE admin SET isdelete = 1 WHERE id = ' + id;
+
+        conn.query(query).then(rows =>{
+            res.send({
+              status: 'success',
+              result: rows
+            });
+        }).catch(err => {
+            res.send({
+              status: 'fail',
+              result: err
+            });
+        });
+    });
+    // 섹션 추가
+    app.post('/post-section', (req, res) => {
+        const data = req.body;
+        let query = `SELECT name FROM section
+                    WHERE
+                        name = ${mysql.escape(data.name)} AND
+                        isdelete = 0`;
+
+        conn.query(query).then(rows =>{// 입력받은 정보와 같은 이름의 row가 발견되면 INSERT하지 않음
+            let canInsert = true;
+            let name = data.name;
+
+            for(let i = 0; i < rows.length; i++){
+                if(!canInsert) break;
+
+                let section = rows[i].name;
+                if(section === name){
+                    canInsert = false;
+            }
+          }
+        });
+
+        if(canInsert){
+            let query = `INSERT INTO section (name)
+                        VALUES (${mysql.escape(data.name)})`;
+            conn.query(query).then(rows => {
+                res.send({
+                    status: 'success',
+                    result: rows
+                });
+            }).catch(err => {
+                res.send({
+                    status: 'fail',
+                    result: err
+                });
+            });
+        }
+    });
+    // 섹션 삭제
+    app.put('/delete-section', (req, res) => {
+        const data = req.body;
+        let id = data.id;
+        let query = `UPDATE section SET isdelete = 1 WHERE id = ` + id;
+
+        conn.query(query).then(rows => {
+            res.send({
+                status: 'success',
+                result: rows
+            });
+        }).catch(err => {
+            res.send({
+                status: 'fail',
+                result: err
+            });
+        });
+    });
+    // 배치도 첨부
+    app.post('/post-layout', (req, res) => {});
+    // 제재 리스트
+    app.get('/sanction', (req, res) => {// 제재 대상, 처리자, 처리결과, 처리일자를 받아 제재 리스트를 작성
+      const query = `SELECT prebooker, manager, result, sanction_date
+                    FROM report
+                    WHERE
+                        result IS not NULL AND
+                        sanction_date IS not NULL`;
+
+      conn.query(query).then(rows => {
+          res.send({
+              status: 'success',
+              result: rows
+          });
+      }).catch(err => {
+          res.send({
+              status: 'fail',
+              result: err
+          });
+      });
+    });
+    // 제재 추가
+    app.put('/post-sanction', (req, res) => {
+        const data = req.body;
+        let query = `SELECT id FROM report
+                    WHERE
+                        id = ${mysql.escape(data.id)} AND
+                        manager IS NULL AND
+                        result IS NULL AND
+                        sanction_date IS NULL`;
+
+        conn.query(query).then(rows => {
+            let id = data.id;
+            let query = `UPDATE report
+                        SET
+                          manager = ${mysql.escape(data.manager)} AND
+                          result = ${mysql.escape(data.result)} AND
+                          sanction_date = ${mysql.escape(data.sanction_date)}`;
+
+            conn.query(query).then(rows => {
+                res.send({
+                    status: 'success',
+                    result: rows
+                });
+            }).catch(err => {
+                res.send({
+                    status: 'fail',
+                    result: err
+                });
+            });
+        });
+    })
+
 });
 
 app.listen(3000, () => {
