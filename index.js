@@ -3,12 +3,7 @@ const request = require('request-promise');
 const mysql = require('promise-mysql');
 const moment = require('moment');
 const bodyParser = require('body-parser');
-const multiparty = require('multiparty');
-const fs = require('fs');
 const app = express();
-
-const remoteFileUrl = '../SE_Booking_System_front/dist';
-// const remoteFileUrl = '../front/src';
 
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
@@ -37,7 +32,7 @@ mysql.createConnection({
         request(url).then(res => {
             if (res.match('OK')) {
                 // 로그인 성공시 admin 체크 수행
-                const query = `SELECT * FROM admin WHERE credit = ${ mysql.escape(id) }`;
+                const query = `SELECT * FROM admin WHERE id = ${ mysql.escape(id) }`;
                 conn.query(query).then(rows => {
                     if (rows.length !== 0) {
                         expressRes.send({
@@ -60,6 +55,7 @@ mysql.createConnection({
                 })
             }
         }).catch(error => {
+            console.log(error);
             expressRes.send({
                 status: 'fail',
                 result: error
@@ -351,7 +347,7 @@ mysql.createConnection({
         });
     });
     // 관리자 추가
-    app.post('/post-admin', (req, res) => {
+    app.post('/post-manager', (req, res) => {
         const data = req.body;
         let query = `SELECT * FROM admin
                     WHERE
@@ -430,23 +426,23 @@ mysql.createConnection({
                     canInsert = false;
                 }
             }
-        });
 
-        if (canInsert) {
-            let query = `INSERT INTO section (name)
+            if (canInsert) {
+                let query = `INSERT INTO section (name)
                         VALUES (${mysql.escape(data.name)})`;
-            conn.query(query).then(rows => {
-                res.send({
-                    status: 'success',
-                    result: rows
+                conn.query(query).then(rows => {
+                    res.send({
+                        status: 'success',
+                        result: rows
+                    });
+                }).catch(err => {
+                    res.send({
+                        status: 'fail',
+                        result: err
+                    });
                 });
-            }).catch(err => {
-                res.send({
-                    status: 'fail',
-                    result: err
-                });
-            });
-        }
+            }
+        });
     });
     // 섹션 삭제
     app.put('/delete-section', (req, res) => {
@@ -465,9 +461,6 @@ mysql.createConnection({
                 result: err
             });
         });
-    });
-    // 배치도 첨부
-    app.post('/post-layout', (req, res) => {
     });
     // 제재 리스트
     app.get('/sanction', (req, res) => {// 제재 대상, 처리자, 처리결과, 처리일자를 받아 제재 리스트를 작성
