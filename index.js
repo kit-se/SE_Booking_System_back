@@ -148,7 +148,7 @@ mysql.createConnection({
             }
         });
     });
-    //관리자 리스트
+    // 관리자 리스트
     app.get('/admin', (req, res) => {
         const query = 'SELECT id, credit, name, position FROM admin WHERE isdelete = 0';
         conn.query(query).then(rows => {
@@ -163,7 +163,7 @@ mysql.createConnection({
             });
         });
     });
-    //관리자 추가
+    // 관리자 추가
     app.post('/postManager', (req, res) => {
         const data = req.body;
         let query = `SELECT * FROM admin
@@ -177,18 +177,18 @@ mysql.createConnection({
             let credit = data.credit;
             let name = data.name;
 
-            for(int i = 0; i < rows.length; i++){//입력받은 정보와 같은 학번이나 이름을 가진 row가 발견될 경우 INSERT 하지 않음
-                if(!canInsert) break;//INSERT 못할 시 loop 종료
+            for(let i = 0; i < rows.length; i++){// 입력받은 정보와 같은 학번이나 이름을 가진 row가 발견될 경우 INSERT 하지 않음
+                if(!canInsert) break;// INSERT 못할 시 loop 종료
 
                 let adminCredit = rows[i].credit;
                 let adminName = rows[i].name;
 
-                if(credit == adminCredit && name == adminName){//겹치는 사람이 존재한다는 뜻
+                if(credit === adminCredit && name === adminName){// 겹치는 사람이 존재한다는 뜻
                     canInsert = false;
                 }
             }
 
-            if(canInsert){//확인 후 INSERT할 수 있다고 하면 INSERT진행
+            if(canInsert){// 확인 후 INSERT할 수 있다고 하면 INSERT진행
                 let query = `INSERT INTO admin (credit, name, position)
                             VALUES (${mysql.escape(data.credit)}, ${mysql.escape(data.name)}, ${mysql.escape(data.position)})`;
                 conn.query(query).then(rows =>{
@@ -239,15 +239,15 @@ mysql.createConnection({
                         name = ${mysql.escape(data.name)} AND
                         isdelete = 0`;
 
-        conn.query(query).then(rows =>{//입력받은 정보와 같은 이름의 row가 발견되면 INSERT하지 않음
+        conn.query(query).then(rows =>{// 입력받은 정보와 같은 이름의 row가 발견되면 INSERT하지 않음
             let canInsert = true;
             let name = data.name;
 
-            for(int i = 0; i < rows.length; i++){
+            for(let i = 0; i < rows.length; i++){
                 if(!canInsert) break;
 
                 let section = rows.name;
-                if(section == name){
+                if(section === name){
                     canInsert = false;
             }
           }
