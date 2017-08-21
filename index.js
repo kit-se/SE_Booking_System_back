@@ -164,7 +164,7 @@ mysql.createConnection({
         });
     });
     // 관리자 추가
-    app.post('/post-manager', (req, res) => {
+    app.post('/post-admin', (req, res) => {
         const data = req.body;
         let query = `SELECT * FROM admin
                     WHERE
@@ -206,28 +206,20 @@ mysql.createConnection({
         });
     });
     // 관리자 제거
-    app.put('/delete-manager', (req, res) => {
+    app.put('/delete-admin', (req, res) => {
         const data = req.body;
-        let query = `SELECT id FROM admin
-                    WHERE
-                        credit = ${mysql.escape(data.credit)} AND
-                        name = ${mysql.escape(data.name)} AND
-                        isdelete = 0`;
+        let id = data.id;
+        let query = 'UPDATE admin SET isdelete = 1 WHERE id = ' + id;
 
-        conn.query(query).then(rows => {
-            let id = rows.id;
-            let query = 'UPDATE admin SET isdelete = 1 WHERE id = ' + id;
-
-            conn.query(query).then(rows =>{
-                res.send({
-                  status: 'success',
-                  result: rows
-                });
-            }).catch(err => {
-                res.send({
-                  status: 'fail',
-                  result: err
-                });
+        conn.query(query).then(rows =>{
+            res.send({
+              status: 'success',
+              result: rows
+            });
+        }).catch(err => {
+            res.send({
+              status: 'fail',
+              result: err
             });
         });
     });
