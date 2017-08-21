@@ -7,8 +7,8 @@ const multiparty = require('multiparty');
 const fs = require('fs');
 const app = express();
 
-const localFileUrl = '../front/src';
 const remoteFileUrl = '../SE_Booking_System_front/dist';
+// const remoteFileUrl = '../front/src';
 
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
@@ -318,11 +318,11 @@ mysql.createConnection({
     });
     // 배치도 로드
     app.get('/layout', (req, res) => {
-        let query = `SELECT url FROM layout WHERE isdelete = 0`;
+        let query = `SELECT url FROM layout WHERE isdelete = 0 ORDER BY id DESC`;
         conn.query(query).then(rows => {
             res.send({
                 status: 'success',
-                result: rows[rows.length - 1] // 최신의 layout 파일 url
+                result: rows[0] // 최신의 layout 파일 url
             });
         }).catch(err => {
             res.send({
