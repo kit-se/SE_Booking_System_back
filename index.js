@@ -164,7 +164,7 @@ mysql.createConnection({
         });
     });
     // 관리자 추가
-    app.post('/post_manager', (req, res) => {
+    app.post('/post-manager', (req, res) => {
         const data = req.body;
         let query = `SELECT * FROM admin
                     WHERE
@@ -206,7 +206,7 @@ mysql.createConnection({
         });
     });
     // 관리자 제거
-    app.put('/delete_manager', (req, res) => {
+    app.put('/delete-manager', (req, res) => {
         const data = req.body;
         let query = `SELECT id FROM admin
                     WHERE
@@ -232,7 +232,7 @@ mysql.createConnection({
         });
     });
     // 섹션 추가
-    app.post('/post_section', (req, res) => {
+    app.post('/post-section', (req, res) => {
         const data = req.body;
         let query = `SELECT name FROM section
                     WHERE
@@ -270,7 +270,7 @@ mysql.createConnection({
         }
     });
     // 섹션 삭제
-    app.put('/delete_section', (req, res) => {
+    app.put('/delete-section', (req, res) => {
         const data = req.body;
         let query = `SELETE id FROM section
                     WHERE
@@ -295,7 +295,7 @@ mysql.createConnection({
         });
     });
     // 배치도 첨부
-    app.post('/post_layout', (req, res) => {});
+    app.post('/post-layout', (req, res) => {});
     // 제재 리스트
     app.get('/sanction', (req, res) => {// 제재 대상, 처리자, 처리결과, 처리일자를 받아 제재 리스트를 작성
       const query = `SELECT prebooker, manager, result, sanction_date
@@ -317,7 +317,7 @@ mysql.createConnection({
       });
     });
     // 제재 추가
-    app.put('/post_sanction', (req, res) => {
+    app.put('/post-sanction', (req, res) => {
         const data = req.body;
         let query = `SELECT id FROM report
                     WHERE
