@@ -21,10 +21,10 @@ app.use(bodyParser.json());
 
 mysql.createConnection({
     host: 'localhost',
-    // user: 'gurubooru',
-    // password: 'se330bs',
-    user: 'root',
-    password: 'grapgrap',
+    user: 'gurubooru',
+    password: 'se330bs',
+    // user: 'root',
+    // password: 'grapgrap',
     database: 'booking_system'
 }).then((conn) => {
     // 로그인
@@ -169,7 +169,7 @@ mysql.createConnection({
                             section.id = booking.section AND
                             booking.booker = ${mysql.escape(id)} AND 
                             booking.isdelete = 0    
-	                    ORDER BY booking.booking_date DESC`;
+	                    ORDER BY booking.id DESC`;
         conn.query(query).then(rows => {
             res.send({
                 status: 'success',
