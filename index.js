@@ -7,8 +7,8 @@ const multiparty = require('multiparty');
 const fs = require('fs');
 const app = express();
 
-const remoteFileUrl = '../SE_Booking_System_front/dist';
-// const remoteFileUrl = '../front/src';
+// const remoteFileUrl = '../SE_Booking_System_front/dist';
+const remoteFileUrl = '../front/src';
 
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
@@ -21,8 +21,10 @@ app.use(bodyParser.json());
 
 mysql.createConnection({
     host: 'localhost',
-    user: 'gurubooru',
-    password: 'se330bs',
+    // user: 'gurubooru',
+    // password: 'se330bs',
+    user: 'root',
+    password: 'grapgrap',
     database: 'booking_system'
 }).then((conn) => {
     // 로그인
@@ -235,29 +237,36 @@ mysql.createConnection({
                 time = value;
             }
         });
+
+        let fileUrlList = [];
         data.on('part', (file) => {
             let url = remoteFileUrl + '/assets/report/' + moment() + file.filename;
             const fileWriteStream = fs.createWriteStream(url);
             file.pipe(fileWriteStream);
 
             file.on('end', () => {
+                fileUrlList.push(url);
                 fileWriteStream.end();
-                let query = // reporter는 신고자의 예약번호, target은 용의자의 예약번호.
-                    `SELECT reporter.booker as reporter, target.id as suspect FROM
-                        booking AS reporter,
-                        booking AS target
-                        WHERE
-                            target.id = ${ mysql.escape(time) } AND
-                            target.section = reporter.section AND
-                            target.id > reporter.id
-                        ORDER BY reporter.id DESC`;
+            });
+        });
+        data.on('close', () => {
+            let query = // reporter는 신고자의 예약번호, target은 용의자의 예약번호.
+                `SELECT reporter.booker as reporter, target.id as suspect FROM
+                            booking AS reporter,
+                            booking AS target
+                            WHERE
+                                target.id = ${ mysql.escape(time) } AND
+                                target.section = reporter.section AND
+                                target.id > reporter.id
+                            ORDER BY reporter.id DESC`;
 
-                conn.query(query).then(rows => {
-                    let reporter = rows[0].reporter;
-                    let suspect = rows[0].suspect;
-                    let query = `INSERT INTO report (reporter, title, content, prebooker) VALUES (${ mysql.escape(reporter) }, ${ mysql.escape(title) }, ${ mysql.escape(contents) }, ${ mysql.escape(suspect)})`;
-                    conn.query(query).then(result => {
-                        let frontUrl = '..' + url.split(remoteFileUrl)[1];
+            conn.query(query).then(rows => { // 신고자에 대한 용의자의 예약 번호를 찾아오고 report 테이블에 INSERT 할 준비를 함.
+                let reporter = rows[0].reporter;
+                let suspect = rows[0].suspect;
+                let query = `INSERT INTO report (reporter, title, content, prebooker) VALUES (${ mysql.escape(reporter) }, ${ mysql.escape(title) }, ${ mysql.escape(contents) }, ${ mysql.escape(suspect)})`;
+                conn.query(query).then(result => { // report 테이블에 INSERT 한 ID를 가져다 reportpicture 테이블에 외래키로 넣을 준비를 함.
+                    for ( let i = 0; i < fileUrlList.length; i++ ) { // file 갯수만큼 루프를 돌면서 reportpicture 테이블에 INSERT
+                        let frontUrl = '..' + fileUrlList[i].split(remoteFileUrl)[1];
                         let query = `INSERT INTO reportpicture (report_id, url) VALUES (${ mysql.escape(result.insertId) }, ${ mysql.escape(frontUrl) })`;
                         conn.query(query).then(result => {
                             res.send({
@@ -270,19 +279,20 @@ mysql.createConnection({
                                 result: err
                             });
                         });
-                    }).catch(err => {
-                        res.send({
-                            status: 'fail',
-                            result: err
-                        })
-                    });
+                    }
                 }).catch(err => {
                     res.send({
                         status: 'fail',
                         result: err
-                    });
+                    })
+                });
+            }).catch(err => {
+                res.send({
+                    status: 'fail',
+                    result: err
                 });
             });
+
         });
         data.parse(req);
     });
@@ -517,8 +527,49 @@ mysql.createConnection({
                 });
             });
         });
-    })
+    });
+    // 신고 리스트
+    app.get('/report', (req, res) => {
+        let query =
+            `SELECT r.id, r.title, b.booker, b.booking_date, b.section  FROM
+		        (SELECT report.id AS id, report.title AS title, report.prebooker AS prebooker
+			        FROM report) AS r,
+		        (SELECT booking.id AS id, booking.booker AS booker, booking.booking_date AS booking_date, section.name AS section
+			        FROM booking, section
+                    WHERE booking.section = section.id) AS b
+                WHERE r.prebooker = b.id;`;
 
+        conn.query(query).then(rows => {
+            res.send({
+                status: 'success',
+                result: rows
+            });
+        }).catch(err => {
+            res.send({
+                status: 'fail',
+                result: err
+            });
+        });
+    });
+    // 신고 내용
+    app.get('/report/:id', (req, res) => {
+        let query =
+            `SELECT report.id AS id, report.title AS title, report.prebooker AS prebooker, reportpicture.url AS url 
+                    FROM report, reportpicture
+                    WHERE report.id = reportpicture.report_id AND report.id = ${req.param.id};`;
+
+        conn.query(query).then(rows => {
+            res.send({
+                status: 'success',
+                result: rows
+            }).catch(err => {
+                res.send({
+                    status: 'fail',
+                    result: err
+                })
+            })
+        })
+    });
 });
 
 app.listen(3000, () => {
