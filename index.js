@@ -494,11 +494,22 @@ mysql.createConnection({
     });
     // 제재 리스트
     app.get('/sanction', (req, res) => {// 제재 대상, 처리자, 처리결과, 처리일자를 받아 제재 리스트를 작성
-        const query = `SELECT prebooker, manager, result, sanction_date
-                    FROM report
-                    WHERE
-                        result IS not NULL AND
-                        sanction_date IS not NULL`;
+        const query = `SELECT 
+                            booking.booker AS prebooker,
+                            admin.name AS manager,
+                            result,
+                            start_date,
+                            end_date
+                        FROM
+                            report,
+                            booking,
+                            admin
+                        WHERE
+                            report.manager = admin.id
+                            AND report.prebooker = booking.id
+                            AND result IS NOT NULL
+                            AND start_date IS NOT NULL
+                            AND end_date IS NOT NULL`;
 
         conn.query(query).then(rows => {
             res.send({
