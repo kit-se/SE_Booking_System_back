@@ -265,7 +265,7 @@ mysql.createConnection({
                 let suspect = rows[0].suspect;
                 let query = `INSERT INTO report (reporter, title, content, prebooker) VALUES (${ mysql.escape(reporter) }, ${ mysql.escape(title) }, ${ mysql.escape(contents) }, ${ mysql.escape(suspect)})`;
                 conn.query(query).then(result => { // report 테이블에 INSERT 한 ID를 가져다 reportpicture 테이블에 외래키로 넣을 준비를 함.
-                    for ( let i = 0; i < fileUrlList.length; i++ ) { // file 갯수만큼 루프를 돌면서 reportpicture 테이블에 INSERT
+                    for (let i = 0; i < fileUrlList.length; i++) { // file 갯수만큼 루프를 돌면서 reportpicture 테이블에 INSERT
                         let frontUrl = '..' + fileUrlList[i].split(remoteFileUrl)[1];
                         let query = `INSERT INTO reportpicture (report_id, url) VALUES (${ mysql.escape(result.insertId) }, ${ mysql.escape(frontUrl) })`;
                         conn.query(query).then(result => {
@@ -359,6 +359,21 @@ mysql.createConnection({
                 status: 'fail',
                 result: err
             });
+        });
+    });
+    // 관리자 정보 By 학번
+    app.get('/admin/:credit', (req, res) => {
+        let query = `SELECT * FROM admin WHERE credit = ${ mysql.escape(req.params.credit) } AND isdelete = 0 ORDER BY id DESC`;
+        conn.query(query).then(rows => {
+            res.send({
+                status: 'success',
+                result: rows
+            })
+        }).catch(err => {
+            res.send({
+                status: 'fail',
+                result: err
+            })
         });
     });
     // 관리자 추가
@@ -501,31 +516,40 @@ mysql.createConnection({
     app.put('/post-sanction', (req, res) => {
         const data = req.body;
         let query = `SELECT id FROM report
-                    WHERE
-                        id = ${mysql.escape(data.id)} AND
-                        manager IS NULL AND
-                        result IS NULL AND
-                        sanction_date IS NULL`;
+                        WHERE
+                            id = ${mysql.escape(data.id)} AND
+                            manager IS NULL AND
+                            result IS NULL AND
+                            start_date IS NULL AND
+                            end_date IS NULL`;
 
         conn.query(query).then(rows => {
-            let id = data.id;
-            let query = `UPDATE report
-                        SET
-                          manager = ${mysql.escape(data.manager)} AND
-                          result = ${mysql.escape(data.result)} AND
-                          sanction_date = ${mysql.escape(data.sanction_date)}`;
+            if (rows.length !== 0) {
+                let query = `UPDATE report
+                                SET
+                                    manager = ${mysql.escape(data.manager)},
+                                    result = ${mysql.escape(data.result)},
+                                    start_date = ${mysql.escape(data.start_date)},
+                                    end_date = ${mysql.escape(data.end_date)}
+                                WHERE id = ${mysql.escape(data.id)}`;
 
-            conn.query(query).then(rows => {
-                res.send({
-                    status: 'success',
-                    result: rows
+                conn.query(query).then(rows => {
+                    res.send({
+                        status: 'success',
+                        result: 'Sanction was updated successfully'
+                    });
+                }).catch(err => {
+                    res.send({
+                        status: 'fail',
+                        result: err
+                    });
                 });
-            }).catch(err => {
+            } else {
                 res.send({
                     status: 'fail',
-                    result: err
-                });
-            });
+                    result: `Not Exist ${data.id} Report`
+                })
+            }
         });
     });
     // 신고 리스트
@@ -533,7 +557,7 @@ mysql.createConnection({
         let query =
             `SELECT r.id, r.title, b.booker, b.booking_date, b.section  FROM
 		        (SELECT report.id AS id, report.title AS title, report.prebooker AS prebooker
-			        FROM report) AS r,
+			        FROM report WHERE manager IS NULL) AS r,
 		        (SELECT booking.id AS id, booking.booker AS booker, booking.booking_date AS booking_date, section.name AS section
 			        FROM booking, section
                     WHERE booking.section = section.id) AS b
@@ -554,19 +578,25 @@ mysql.createConnection({
     // 신고 내용
     app.get('/report/:id', (req, res) => {
         let query =
-            `SELECT report.id AS id, report.title AS title, report.prebooker AS prebooker, reportpicture.url AS url 
+            `SELECT r.id, r.title, r.content, r.url, b.booker AS prebooker  FROM
+                (SELECT report.id AS id, report.title AS title, report.content AS content, report.prebooker AS prebooker, reportpicture.url AS url 
                     FROM report, reportpicture
-                    WHERE report.id = reportpicture.report_id AND report.id = ${req.param.id};`;
+                    WHERE report.id = reportpicture.report_id AND report.id = ${ mysql.escape(req.params.id) }) AS r,
+                (SELECT booking.id AS id, booking.booker AS booker, booking.booking_date AS booking_date, section.name AS section
+                    FROM booking, section
+                    WHERE booking.section = section.id) AS b
+                WHERE
+                    r.prebooker = b.id`;
 
         conn.query(query).then(rows => {
             res.send({
                 status: 'success',
                 result: rows
-            }).catch(err => {
-                res.send({
-                    status: 'fail',
-                    result: err
-                })
+            })
+        }).catch(err => {
+            res.send({
+                status: 'fail',
+                result: err
             })
         })
     });
