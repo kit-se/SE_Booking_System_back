@@ -3,7 +3,12 @@ const request = require('request-promise');
 const mysql = require('promise-mysql');
 const moment = require('moment');
 const bodyParser = require('body-parser');
+const multiparty = require('multiparty');
+const fs = require('fs');
 const app = express();
+
+const remoteFileUrl = '../SE_Booking_System_front/dist';
+// const remoteFileUrl = '../front/src';
 
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
@@ -32,7 +37,7 @@ mysql.createConnection({
         request(url).then(res => {
             if (res.match('OK')) {
                 // 로그인 성공시 admin 체크 수행
-                const query = `SELECT * FROM admin WHERE id = ${ mysql.escape(id) }`;
+                const query = `SELECT * FROM admin WHERE credit = ${ mysql.escape(id) }`;
                 conn.query(query).then(rows => {
                     if (rows.length !== 0) {
                         expressRes.send({
@@ -347,7 +352,7 @@ mysql.createConnection({
         });
     });
     // 관리자 추가
-    app.post('/post-manager', (req, res) => {
+    app.post('/post-admin', (req, res) => {
         const data = req.body;
         let query = `SELECT * FROM admin
                     WHERE
