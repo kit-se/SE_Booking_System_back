@@ -155,18 +155,18 @@ mysql.createConnection({
     // 마이페이지용 예약 현황
     app.get('/mypage', (req, res) => {
         let id = req.query.id; // 마이페이지에 접속한 학번
-        let query = `SELECT 	
+        let query = `SELECT
                         booking.id as id,
-                        booking.booker as booker, 
+                        booking.booker as booker,
                         booking.booking_date as booking_date,
                         booking.booking_time as booking_time,
                         section.name as section
-                        FROM 
+                        FROM
                             booking, section
                         WHERE
                             section.id = booking.section AND
-                            booking.booker = ${mysql.escape(id)} AND 
-                            booking.isdelete = 0    
+                            booking.booker = ${mysql.escape(id)} AND
+                            booking.isdelete = 0
 	                    ORDER BY booking.booking_date DESC`;
         conn.query(query).then(rows => {
             res.send({
@@ -204,7 +204,7 @@ mysql.createConnection({
         let change_time = req.body.change_time; // 변경된 시간 // '12, 13, 14' => '12, 14'
 
         let query = `UPDATE booking
-                        SET 
+                        SET
                             booking.changer = ${mysql.escape(changer_id)},
                             booking.booking_time = ${mysql.escape(change_time)}
                         WHERE
@@ -473,7 +473,8 @@ mysql.createConnection({
                     FROM report
                     WHERE
                         result IS not NULL AND
-                        sanction_date IS not NULL`;
+                        start_date IS not NULL AND
+                        end_date IS not NULL`;
 
         conn.query(query).then(rows => {
             res.send({
@@ -495,7 +496,8 @@ mysql.createConnection({
                         id = ${mysql.escape(data.id)} AND
                         manager IS NULL AND
                         result IS NULL AND
-                        sanction_date IS NULL`;
+                        start_date IS NULL AND
+                        end_date IS NULL`;
 
         conn.query(query).then(rows => {
             let id = data.id;
@@ -503,7 +505,8 @@ mysql.createConnection({
                         SET
                           manager = ${mysql.escape(data.manager)} AND
                           result = ${mysql.escape(data.result)} AND
-                          sanction_date = ${mysql.escape(data.sanction_date)}`;
+                          start_date = ${mysql.escape(data.start_date)} AND
+                          end_date = ${mysql.escape(data.end_date)}`;
 
             conn.query(query).then(rows => {
                 res.send({
