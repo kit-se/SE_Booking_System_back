@@ -7,8 +7,8 @@ const multiparty = require('multiparty');
 const fs = require('fs');
 const app = express();
 
-// const remoteFileUrl = '../SE_Booking_System_front/dist';
-const remoteFileUrl = '../front/src';
+const remoteFileUrl = '../SE_Booking_System_front/dist';
+// const remoteFileUrl = '../front/src';
 
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
