@@ -167,9 +167,13 @@ mysql.createConnection({
                             booking, section
                         WHERE
                             section.id = booking.section AND
-                            booking.booker = ${mysql.escape(id)} AND 
+                            booking.booker = ${mysql.escape(id)} AND
+                            (booking.booking_date = ${mysql.escape(moment().subtract(1, 'd').format('YYYY-MM-DD'))} OR
+                             booking.booking_date = ${mysql.escape(moment().format('YYYY-MM-DD'))} OR
+                             booking.booking_date = ${mysql.escape(moment().add(1, 'd').format('YYYY-MM-DD'))}) AND
                             booking.isdelete = 0    
 	                    ORDER BY booking.id DESC`;
+
         conn.query(query).then(rows => {
             res.send({
                 status: 'success',
@@ -509,7 +513,9 @@ mysql.createConnection({
                             AND report.prebooker = booking.id
                             AND result IS NOT NULL
                             AND start_date IS NOT NULL
-                            AND end_date IS NOT NULL`;
+                            AND end_date IS NOT NULL
+                        ORDER BY
+                            report.id DESC`;
 
         conn.query(query).then(rows => {
             res.send({
