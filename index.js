@@ -7,8 +7,8 @@ const multiparty = require('multiparty');
 const fs = require('fs');
 const app = express();
 
-// const remoteFileUrl = '../SE_Booking_System_front/dist';
-const remoteFileUrl = '../front/src';
+const remoteFileUrl = '../SE_Booking_System_front/dist';
+// const remoteFileUrl = '../front/src';
 
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
@@ -21,10 +21,10 @@ app.use(bodyParser.json());
 
 mysql.createConnection({
     host: 'localhost',
-    // user: 'gurubooru',
-    // password: 'se330bs',
-    user: 'root',
-    password: 'grapgrap',
+    user: 'gurubooru',
+    password: 'se330bs',
+    // user: 'root',
+    // password: 'grapgrap',
     database: 'booking_system'
 }).then((conn) => {
     // 로그인
