@@ -7,8 +7,8 @@ const multiparty = require('multiparty');
 const fs = require('fs');
 const app = express();
 
-const remoteFileUrl = '../SE_Booking_System_front/dist';
-// const remoteFileUrl = '../front/src';
+// const remoteFileUrl = '../SE_Booking_System_front/dist';
+const remoteFileUrl = '../front/src';
 
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
@@ -21,10 +21,10 @@ app.use(bodyParser.json());
 
 mysql.createConnection({
     host: 'localhost',
-    user: 'gurubooru',
-    password: 'se330bs',
-    // user: 'root',
-    // password: 'grapgrap',
+    // user: 'gurubooru',
+    // password: 'se330bs',
+    user: 'root',
+    password: 'grapgrap',
     database: 'booking_system'
 }).then((conn) => {
     // 로그인
@@ -33,39 +33,61 @@ mysql.createConnection({
         const id = auth.split(':')[0];
         const password = auth.split(':')[1];
 
-        const url = `http://kumohweb.kumoh.ac.kr/mybsvr/login/login.jsp?id=${id}&passwd=${password}`;
-
-        const expressRes = res;
-        request(url).then(res => {
-            if (res.match('OK')) {
-                // 로그인 성공시 admin 체크 수행
-                const query = `SELECT * FROM admin WHERE credit = ${ mysql.escape(id) }`;
-                conn.query(query).then(rows => {
-                    if (rows.length !== 0) {
-                        expressRes.send({
-                            status: 'success',
-                            result: 'login success',
-                            isAdmin: true
-                        })
-                    } else {
-                        expressRes.send({
-                            staus: 'success',
-                            result: 'login success',
-                            isAdmin: false
-                        })
-                    }
+        let query = `SELECT booking.booker, booking.booking_date, booking.booking_time, suspect_list.start_date, suspect_list.end_date FROM
+                            booking,
+                            (SELECT * FROM booking_system.report WHERE (start_date <= ${ mysql.escape(moment().format('YYYY-MM-DD')) } <= end_date)) AS suspect_list
+                        WHERE
+                            suspect_list.prebooker = booking.id AND
+                            booking.booker = ${ mysql.escape(id) }
+                        ORDER BY suspect_list.id DESC`;
+        conn.query(query).then(rows => {
+            if (rows.length !== 0) {
+                res.send({
+                    status: 'success',
+                    result: 'login fail',
+                    suspect: rows[0]
                 });
             } else {
-                expressRes.send({
-                    status: 'success',
-                    result: 'login fail'
-                })
+                const url = `http://kumohweb.kumoh.ac.kr/mybsvr/login/login.jsp?id=${id}&passwd=${password}`;
+
+                const expressRes = res;
+                request(url).then(res => {
+                    if (res.match('OK')) {
+                        // 로그인 성공시 admin 체크 수행
+                        const query = `SELECT * FROM admin WHERE credit = ${ mysql.escape(id) }`;
+                        conn.query(query).then(rows => {
+                            if (rows.length !== 0) {
+                                expressRes.send({
+                                    status: 'success',
+                                    result: 'login success',
+                                    isAdmin: true
+                                })
+                            } else {
+                                expressRes.send({
+                                    status: 'success',
+                                    result: 'login success',
+                                    isAdmin: false
+                                })
+                            }
+                        });
+                    } else {
+                        expressRes.send({
+                            status: 'success',
+                            result: 'login fail'
+                        })
+                    }
+                }).catch(error => {
+                    expressRes.send({
+                        status: 'fail',
+                        result: error
+                    })
+                });
             }
-        }).catch(error => {
-            console.log(error);
-            expressRes.send({
+
+        }).catch(err => {
+            res.send({
                 status: 'fail',
-                result: error
+                result: err
             })
         });
     });
