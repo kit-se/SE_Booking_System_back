@@ -35,11 +35,12 @@ mysql.createConnection({
 
         let query = `SELECT booking.booker, booking.booking_date, booking.booking_time, suspect_list.start_date, suspect_list.end_date FROM
                             booking,
-                            (SELECT * FROM booking_system.report WHERE (start_date <= ${ mysql.escape(moment().format('YYYY-MM-DD')) } <= end_date)) AS suspect_list
+                            (SELECT * FROM booking_system.report WHERE (start_date <= ${ mysql.escape(moment().format('YYYY-MM-DD')) } AND ${ mysql.escape(moment().format('YYYY-MM-DD')) } <= end_date)) AS suspect_list
                         WHERE
                             suspect_list.prebooker = booking.id AND
                             booking.booker = ${ mysql.escape(id) }
                         ORDER BY suspect_list.id DESC`;
+        console.log( query );
         conn.query(query).then(rows => {
             if (rows.length !== 0) {
                 res.send({
