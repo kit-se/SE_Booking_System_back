@@ -8,7 +8,6 @@ const fs = require('fs');
 const app = express();
 
 const remoteFileUrl = '../SE_Booking_System_front/dist';
-// const remoteFileUrl = '../front/src';
 
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
@@ -26,8 +25,6 @@ mysql.createConnection({
     host: 'localhost',
     user: 'gurubooru',
     password: 'se330bs',
-    // user: 'root',
-    // password: 'grapgrap',
     database: 'booking_system'
 }).then((conn) => {
     // 로그인
@@ -43,7 +40,6 @@ mysql.createConnection({
                             suspect_list.prebooker = booking.id AND
                             booking.booker = ${ mysql.escape(id) }
                         ORDER BY suspect_list.id DESC`;
-        console.log( query );
         conn.query(query).then(rows => {
             if (rows.length !== 0) {
                 res.send({
@@ -199,7 +195,6 @@ mysql.createConnection({
                              booking.booking_date = ${mysql.escape(moment().add(1, 'd').format('YYYY-MM-DD'))}) AND
                             booking.isdelete = 0    
 	                    ORDER BY booking.id DESC`;
-
         conn.query(query).then(rows => {
             res.send({
                 status: 'success',
