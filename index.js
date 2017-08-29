@@ -91,7 +91,48 @@ mysql.createConnection({
             })
         });
     });
-    // 예약 현황
+    // 전체 예약 현황
+    app.get('/booking', (req, res) => {
+        let query =
+            `SELECT booking.id, booking.booker, booking.booking_date, booking.booking_time, booking.changer, section.name AS section, booking.isdelete FROM 
+                booking, section 
+                WHERE 
+                    booking.isdelete = 0 AND
+                    booking.section = section.id`;
+        conn.query(query).then(rows => {
+            res.send({
+                status: 'success',
+                result: rows
+            })
+        }).catch(err => {
+            res.send({
+                status: 'fail',
+                result: err
+            });
+        });
+    });
+    // 예약 현황 By Id
+    app.get('/booking/:id', (req, res) => {
+        let query =
+            `SELECT booking.id, booking.booker, booking.booking_date, booking.booking_time, booking.changer, section.name AS section, booking.isdelete FROM 
+                booking, section 
+                WHERE 
+                    booking.isdelete = 0 AND
+                    booking.id = ${ mysql.escape(req.params.id) } AND
+                    booking.section = section.id`;
+        conn.query(query).then(rows => {
+            res.send({
+                status: 'success',
+                result: rows
+            })
+        }).catch(err => {
+            res.send({
+                status: 'fail',
+                result: err
+            });
+        });
+    });
+    // 메인화면 예약 현황
     app.get('/booking-info', (req, res) => {
         let query = '';
         if (req.query.date_flag === 'today') {
