@@ -291,7 +291,7 @@ mysql.createConnection({
                 let query = `INSERT INTO report (reporter, title, content, prebooker) VALUES (${ mysql.escape(reporter) }, ${ mysql.escape(title) }, ${ mysql.escape(contents) }, ${ mysql.escape(suspect)})`;
                 conn.query(query).then(result => { // report 테이블에 INSERT 한 ID를 가져다 reportpicture 테이블에 외래키로 넣을 준비를 함.
                     for (let i = 0; i < fileUrlList.length; i++) { // file 갯수만큼 루프를 돌면서 reportpicture 테이블에 INSERT
-                        let frontUrl = '..' + fileUrlList[i].split(remoteFileUrl)[1];
+                        let frontUrl = '../booking_system' + fileUrlList[i].split(remoteFileUrl)[1];
                         let query = `INSERT INTO reportpicture (report_id, url) VALUES (${ mysql.escape(result.insertId) }, ${ mysql.escape(frontUrl) })`;
                         conn.query(query).then(result => {
                             res.send({
