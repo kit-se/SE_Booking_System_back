@@ -325,13 +325,13 @@ mysql.createConnection({
     app.post('/layout', (req, res) => {
         const data = new multiparty.Form();
         data.on('part', (file) => {
-            let url = remoteFileUrl + '/booking_system/assets/layout/' + moment() + file.filename;
+            let url = remoteFileUrl + '/assets/layout/' + moment() + file.filename;
             const fileWriteStream = fs.createWriteStream(url);
             file.pipe(fileWriteStream);
 
             file.on('end', () => {
                 fileWriteStream.end();
-                let frontUrl = '..' + url.split(remoteFileUrl)[1];
+                let frontUrl = '../booking_system' + url.split(remoteFileUrl)[1];
                 let query = `UPDATE layout SET isdelete = 1 WHERE isdelete = 0`;
                 conn.query(query).then(() => {
                     let query = `INSERT INTO layout (url) VALUES (${ mysql.escape(frontUrl) })`;
