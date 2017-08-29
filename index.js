@@ -325,7 +325,7 @@ mysql.createConnection({
     app.post('/layout', (req, res) => {
         const data = new multiparty.Form();
         data.on('part', (file) => {
-            let url = remoteFileUrl + '/assets/layout/' + moment() + file.filename;
+            let url = remoteFileUrl + '/booking_system/assets/layout/' + moment() + file.filename;
             const fileWriteStream = fs.createWriteStream(url);
             file.pipe(fileWriteStream);
 
