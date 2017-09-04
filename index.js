@@ -48,7 +48,8 @@ mysql.createConnection({
                     suspect: rows[0]
                 });
             } else {
-                const url = `http://kumohweb.kumoh.ac.kr/mybsvr/login/login.jsp?id=${id}&passwd=${password}`;
+                let encodedPassword = encodeURIComponent(password);
+                const url = `http://kumohweb.kumoh.ac.kr/mybsvr/login/login.jsp?id=${id}&passwd=${ encodedPassword }`;
 
                 const expressRes = res;
                 request(url).then(res => {
